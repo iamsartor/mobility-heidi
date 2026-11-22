@@ -17,10 +17,13 @@ Web-App, mit der Heidi ihre Beweglichkeit, ihre Medikamente und die THS-Einstell
 Ohne Firebase-Konfiguration in `js/config.js` (`firebaseConfig = null`) läuft die App im **Demo-Modus**. Dann liegen die Daten nur im Browser des jeweiligen Geräts.
 
 1. **Web-App registrieren:** erledigt, die Konfiguration steht in `js/config.js`.
-2. **Anmeldung:** Unter Authentication → Sign-in method „E-Mail/Passwort“ aktivieren.
-3. **Familienkonto:** Unter Authentication → Users einen Nutzer mit der E-Mail aus `FAMILY_EMAIL` (`familie@mobility-heidi.app`) anlegen. Das Passwort ist die 6-stellige PIN. Die PIN gehört nie ins Repository.
-4. **Domain freigeben:** Unter Authentication → Settings → Autorisierte Domains `iamsartor.github.io` hinzufügen.
-5. **Regeln:** Den Inhalt von `firestore.rules` unter Firestore → Regeln einfügen. Dabei `FAMILIEN_UID` durch die User UID aus Schritt 3 ersetzen und veröffentlichen.
+2. **Anmeldung:** Unter Authentication → Sign-in method „Anonym“ aktivieren.
+3. **Domain freigeben:** Unter Authentication → Settings → Autorisierte Domains `iamsartor.github.io` hinzufügen.
+4. **Regeln:** Den Inhalt von `firestore.rules` unter Firestore → Regeln einfügen und veröffentlichen.
+
+Die PIN prüft die App selbst gegen `PIN_HASH` in `js/config.js`. Danach meldet sie sich anonym bei Firebase an. Neue PIN setzen: `printf 123456 | sha256sum` ausführen und den Wert als `PIN_HASH` eintragen.
+
+Bewusst einfach gehalten: Wer die öffentliche Konfiguration kennt, könnte sich ebenfalls anonym anmelden und die Daten lesen. Die Daten enthalten nur den Vornamen.
 
 Die PIN muss pro Gerät nur einmal eingegeben werden. Danach fragt die App, ob Heidi oder Heino das Gerät benutzt, damit bei jedem Eintrag steht, wer ihn gemacht hat.
 

@@ -13,9 +13,10 @@ export const firebaseConfig = {
   appId: "1:261960690888:web:8634ec7e6e27b23cf8c9fd",
 };
 
-// Gemeinsames Konto in Firebase Authentication (E-Mail/Passwort).
-// Das Passwort ist die PIN und steht NICHT im Code.
-export const FAMILY_EMAIL = "familie@mobility-heidi.app";
+// PIN für die erste Anmeldung auf einem Gerät, als SHA-256-Hash.
+// Neue PIN setzen: im Terminal  printf 123456 | sha256sum  und den Wert hier eintragen.
+// Nach der PIN meldet sich die App anonym bei Firebase an.
+export const PIN_HASH = "4fde1e4a4ee18989cceb26cef174b918204d8e141e00c1203b530f5005ef87d2";
 
 // Patientin, deren Daten erfasst werden.
 export const PATIENT = { id: "heidi", name: "Heidi" };
