@@ -1,6 +1,6 @@
 // Service Worker: hält die App-Dateien offline verfügbar.
 // Bei Änderungen an den Dateien VERSION erhöhen, damit Geräte die neue Fassung laden.
-const VERSION = "v5";
+const VERSION = "v6";
 const CACHE = `mobility-${VERSION}`;
 const SHELL = ["./", "index.html", "css/style.css", "js/app.js", "js/store.js", "js/export.js", "js/analysis.js", "js/config.js", "manifest.webmanifest", "icons/icon.svg"];
 
@@ -23,7 +23,8 @@ self.addEventListener("fetch", (e) => {
   const lib = url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/");
   if (!own && !lib) return;
   e.respondWith(
-    fetch(e.request)
+    // no-cache: immer beim Server nachfragen (ETag), damit nie alte und neue Dateien gemischt werden
+    fetch(e.request, own ? { cache: "no-cache" } : undefined)
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
