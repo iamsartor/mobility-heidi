@@ -314,6 +314,8 @@ details summary { cursor: pointer; padding: 12px 0; color: var(--purple); font-w
 .grid td.good { background: var(--good); }
 .grid td.poor { background: var(--poor); }
 .grid td.freeze { background: var(--freeze); }
+.grid .intake, .legend .intake { color: var(--purple); font-weight: 800; font-size: 11px; line-height: 1; }
+.legend .intake { margin-left: 6px; }
 .grid td.meal { box-shadow: inset 0 0 0 2px #c0392b; border-radius: 50%; }
 .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; font-size: .75rem; margin: 8px 0; }
 .legend span { display: inline-flex; align-items: center; }

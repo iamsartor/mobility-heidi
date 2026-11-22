@@ -1,5 +1,6 @@
 import { firebaseConfig, PIN_HASH, PATIENT, PEOPLE } from "./config.js";
 import { createStore } from "./store.js";
+import { exportPackage } from "./export.js";
 
 // ---------------------------------------------------------------- Konstanten & Hilfen
 
@@ -569,16 +570,40 @@ async function renderWeek() {
     ).join("")}</tr>`;
   };
 
+  // Einnahmen je Tag: ✕ genommen (nach Plan bzw. zur tatsächlichen Uhrzeit), – ausgelassen, + zusätzlich
+  const intakeMarks = (d) => {
+    const marks = {};
+    const add = (slot, sym, text) => {
+      if (!slot) return;
+      const m = (marks[slot] ||= { syms: new Set(), text: [] });
+      m.syms.add(sym);
+      m.text.push(text);
+    };
+    const isFuture = (t) => d > today() || (d === today() && t > nowTime());
+    for (const m of meds.filter((m) => activeOn(m, d))) {
+      for (const t of m.times || []) {
+        const dev = devs.find((x) => x.date === d && x.medId === m.id && x.plannedTime === t && x.type !== "extra");
+        if (!dev) !isFuture(t) && add(slotOf(t), "✕", `${m.name} ${t}`);
+        else if (dev.type === "late") add(slotOf(dev.actualTime), "✕", `${m.name} ${dev.actualTime} (geplant ${t})`);
+        else add(slotOf(t), "–", `${m.name} ${t} ausgelassen`);
+      }
+    }
+    for (const x of devs.filter((x) => x.date === d && x.type === "extra")) add(slotOf(x.actualTime), "+", `${x.medName} ${x.actualTime} zusätzlich`);
+    return marks;
+  };
+
   const dayRow = (d) => {
     const day = days[d] || {};
     const mob = day.mobility || {};
     const meals = day.meals || [];
+    const marks = intakeMarks(d);
     return `<tr><td class="first">${weekday(d)}<br><small>${fmtDate(d)}</small></td>
       <td class="sleep">${day.sleepHours != null ? fmtNum(day.sleepHours) : ""}</td>
-      ${SLOTS.map(
-        (s) =>
-          `<td class="${mob[s] || ""} ${meals.includes(s) ? "meal" : ""}" title="${s}${mob[s] ? ` ${LEVELS[mob[s]].label}` : ""}${meals.includes(s) ? ", Mahlzeit" : ""}"></td>`,
-      ).join("")}</tr>`;
+      ${SLOTS.map((s) => {
+        const mk = marks[s];
+        const title = [s, mob[s] && LEVELS[mob[s]].label, meals.includes(s) && "Mahlzeit", ...(mk ? mk.text : [])].filter(Boolean).join(", ");
+        return `<td class="${mob[s] || ""} ${meals.includes(s) ? "meal" : ""}" title="${esc(title)}">${mk ? `<span class="intake">${[...mk.syms].join("")}</span>` : ""}</td>`;
+      }).join("")}</tr>`;
   };
 
   const devText = (d) =>
@@ -633,6 +658,7 @@ async function renderWeek() {
       <div class="legend">
         ${Object.entries(LEVELS).map(([k, l]) => `<span><i class="${k}"></i>${l.label}</span>`).join("")}
         <span><i class="meal"></i>Mahlzeit</span>
+        <span><b class="intake">✕</b>&nbsp;Einnahme <b class="intake">–</b>&nbsp;ausgelassen <b class="intake">+</b>&nbsp;zusätzlich</span>
       </div>
 
       <div class="two-col">
@@ -708,6 +734,12 @@ async function renderSettings() {
     </section>
 
     <section class="card">
+      <h2>Daten exportieren</h2>
+      <p class="sub">Alle Einträge als ZIP für eigene Auswertungen, z. B. in Excel, R oder Python: CSV-Tabellen mit Datenbeschreibung (Frictionless Data Package).</p>
+      <button class="secondary" data-export>Export herunterladen</button>
+    </section>
+
+    <section class="card">
       <h2>Dieses Gerät</h2>
       <p>Einträge werden gespeichert als: <strong>${esc(who.get())}</strong></p>
       <div class="row">${PEOPLE.map((p) => `<button class="secondary ${who.get() === p ? "chosen" : ""}" data-who="${esc(p)}">${esc(p)}</button>`).join("")}</div>
@@ -724,6 +756,18 @@ async function renderSettings() {
       renderSettings();
     }),
   );
+  $app.querySelector("[data-export]").addEventListener("click", async (e) => {
+    e.target.disabled = true;
+    try {
+      const counts = await exportPackage(store, PATIENT, today());
+      toast(`Export erstellt: ${counts.find(([n]) => n === "mobility")[1]} Beweglichkeitseinträge.`);
+    } catch (err) {
+      console.error(err);
+      toast("Export fehlgeschlagen.");
+    } finally {
+      e.target.disabled = false;
+    }
+  });
   $app.querySelector("[data-logout]")?.addEventListener("click", async () => {
     await store.signOut();
     renderPin();
