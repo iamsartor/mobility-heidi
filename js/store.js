@@ -3,7 +3,7 @@
 // - LocalStore: Demo-Modus, Daten nur im Browser (localStorage)
 //
 // Datenmodell unter patients/{patientId}/…
-//   days/{YYYY-MM-DD}     mobility: {"06:00": "over"|"good"|"poor"}, sleepHours, meals: ["07:30"], notes
+//   days/{YYYY-MM-DD}     mobility: {"06:00": "over"|"good"|"poor"|"freeze"}, sleepHours, meals: ["07:30"], notes
 //   medications/{id}      name, dose, times: ["07:00"], validFrom, validTo (YYYY-MM-DD oder null)
 //   deviations/{id}       date, medId, medName, plannedTime, type: "late"|"skipped"|"extra", actualTime
 //   thsSettings/{id}      validFrom (YYYY-MM-DDTHH:MM), mode: "closedLoop"|"manual", sensitivity, note

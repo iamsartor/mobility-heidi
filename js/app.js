@@ -11,6 +11,7 @@ const LEVELS = {
   over: { label: "Überbeweglich", sym: "▲" },
   good: { label: "Gut beweglich", sym: "●" },
   poor: { label: "Schlecht beweglich", sym: "▼" },
+  freeze: { label: "Freezing", sym: "■" },
 };
 const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
@@ -553,15 +554,17 @@ async function renderWeek() {
   const thsAtStart = thsSorted.filter((s) => s.validFrom < from).pop();
   const thsInWeek = thsSorted.filter((s) => s.validFrom >= from && s.validFrom <= `${to}T23:59`);
 
+  // Beide Tabellen nutzen dasselbe Spaltenraster, damit die Uhrzeiten exakt untereinander stehen.
+  const cols = `<colgroup><col class="c-first"><col class="c-sleep">${SLOTS.map(() => "<col>").join("")}</colgroup>`;
   const hourHead = (first) =>
-    `<tr><th class="first">${first}</th>${first === "Wochentag" ? '<th class="sleep">Schlaf<br>in Std.</th>' : ""}${[...Array(18)]
+    `<tr>${first === "Wochentag" ? `<th class="first">${first}</th><th class="sleep">Schlaf<br>in Std.</th>` : `<th class="first" colspan="2">${first}</th>`}${[...Array(18)]
       .map((_, i) => `<th colspan="2">${pad(i + 6)}:00</th>`)
       .join("")}</tr>`;
 
   const medRow = (m) => {
     const partial = m.validFrom > from || (m.validTo && m.validTo < to);
     const range = partial ? `<br><small>${m.validFrom > from ? `ab ${fmtDate(m.validFrom)}` : ""} ${m.validTo && m.validTo < to ? `bis ${fmtDate(m.validTo)}` : ""}</small>` : "";
-    return `<tr><td class="first">${esc(m.name)}${m.dose ? ` <small>${esc(m.dose)}</small>` : ""}${range}</td>${SLOTS.map(
+    return `<tr><td class="first" colspan="2">${esc(m.name)}${m.dose ? ` <small>${esc(m.dose)}</small>` : ""}${range}</td>${SLOTS.map(
       (s) => `<td class="${(m.times || []).includes(s) ? "x" : ""}">${(m.times || []).includes(s) ? "✕" : ""}</td>`,
     ).join("")}</tr>`;
   };
@@ -605,9 +608,9 @@ async function renderWeek() {
       </div>
 
       <h3>Verordnungsplan für die Woche vom ${fmtDate(from, true)} bis ${fmtDate(to, true)}</h3>
-      <div class="scroll"><table class="grid meds">
+      <div class="scroll"><table class="grid meds">${cols}
         <thead>${hourHead("Parkinson-Medikamente")}</thead>
-        <tbody>${weekMeds.length ? weekMeds.map(medRow).join("") : `<tr><td class="first">Kein Plan hinterlegt</td>${SLOTS.map(() => "<td></td>").join("")}</tr>`}</tbody>
+        <tbody>${weekMeds.length ? weekMeds.map(medRow).join("") : `<tr><td class="first" colspan="2">Kein Plan hinterlegt</td>${SLOTS.map(() => "<td></td>").join("")}</tr>`}</tbody>
       </table></div>
 
       <p class="ths"><strong>THS:</strong> ${
@@ -622,7 +625,7 @@ async function renderWeek() {
       }</p>
 
       <h3>Meine Beweglichkeit</h3>
-      <div class="scroll"><table class="grid mobility">
+      <div class="scroll"><table class="grid mobility">${cols}
         <thead>${hourHead("Wochentag")}</thead>
         <tbody>${dates.map(dayRow).join("")}</tbody>
       </table></div>
