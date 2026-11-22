@@ -302,8 +302,10 @@ details summary { cursor: pointer; padding: 12px 0; color: var(--purple); font-w
 .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .grid { border-collapse: collapse; font-size: 11px; min-width: 760px; width: 100%; table-layout: fixed; }
 .grid th { background: var(--purple); color: #fff; font-weight: 600; padding: 3px 0; border-left: 1px solid #fff; }
-.grid th.first, .grid td.first { width: 120px; text-align: left; padding: 3px 6px; }
-.grid th.sleep, .grid td.sleep { width: 44px; text-align: center; }
+.grid col.c-first { width: 120px; }
+.grid col.c-sleep { width: 44px; }
+.grid th.first, .grid td.first { text-align: left; padding: 3px 6px; }
+.grid th.sleep, .grid td.sleep { text-align: center; }
 .grid td { border: 1px solid var(--line); height: 24px; text-align: center; padding: 0; }
 .grid td small { color: var(--muted); }
 .grid.meds td.x { font-weight: 700; color: var(--purple); }
