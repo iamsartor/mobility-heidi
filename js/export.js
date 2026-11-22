@@ -74,12 +74,13 @@ export function buildTables({ days, meds, devs, ths, patient, today, now = new D
     F("medication_id", "string", "Interne ID der Planversion"),
     F("medication", "string", "Name des Medikaments"),
     F("dose", "string", "Dosis als Freitext (z. B. 125 mg)"),
+    F("dose_relevant", "boolean", "true, wenn das Medikament direkt auf die Beweglichkeit wirkt (z. B. Levodopa); Grundlage der Wirkverlaufs-Analyse"),
     F("planned_time", "time", "Geplante Uhrzeit (lokal)"),
     F("valid_from", "date", "Plan gültig ab"),
     F("valid_to", "date", "Plan gültig bis (leer = unbefristet)"),
   ];
   const plan = meds.flatMap((m) =>
-    (m.times || []).map((t) => ({ medication_id: m.id, medication: m.name, dose: m.dose || "", planned_time: `${t}:00`, valid_from: m.validFrom, valid_to: m.validTo || "" })),
+    (m.times || []).map((t) => ({ medication_id: m.id, medication: m.name, dose: m.dose || "", dose_relevant: m.doseRelevant !== false, planned_time: `${t}:00`, valid_from: m.validFrom, valid_to: m.validTo || "" })),
   );
   tables.push({ name: "medication_plan", title: "Medikamentenplan (Verordnung)", fields: planFields, rows: plan });
 

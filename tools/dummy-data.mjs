@@ -49,7 +49,7 @@ const meds = [
   { id: "madopar-v1", name: "Madopar", dose: "125 mg", times: ["07:00", "11:00", "15:00", "19:00"], validFrom: "2026-10-01", validTo: "2026-11-08" },
   { id: "madopar-v2", name: "Madopar", dose: "125 mg", times: ["07:00", "10:30", "14:00", "17:30", "21:00"], validFrom: "2026-11-09", validTo: null },
   { id: "madopar-depot", name: "Madopar Depot", dose: "125 mg", times: ["22:00"], validFrom: "2026-10-01", validTo: null },
-  { id: "rasagilin", name: "Rasagilin", dose: "1 mg", times: ["08:00"], validFrom: "2026-10-01", validTo: null },
+  { id: "rasagilin", name: "Rasagilin", dose: "1 mg", doseRelevant: false, times: ["08:00"], validFrom: "2026-10-01", validTo: null },
 ];
 const LEVODOPA = new Set(["madopar-v1", "madopar-v2"]);
 
@@ -150,5 +150,7 @@ for (const f of files) {
   mkdirSync(join(OUT, f.name, ".."), { recursive: true });
   writeFileSync(join(OUT, f.name), f.content);
 }
+// Rohdaten im App-Format (für Tests der Analyse-Seite im Demo-Modus)
+writeFileSync(join(OUT, "app-data.json"), JSON.stringify({ days, medications: Object.fromEntries(meds.map(({ id, ...m }) => [id, m])), deviations: Object.fromEntries(devs.map(({ id, ...d }) => [id, d])), thsSettings: Object.fromEntries(ths.map(({ id, ...t }) => [id, t])) }));
 writeFileSync(join(OUT, `${folder}.zip`), Buffer.from(await zip(files).arrayBuffer()));
 console.log(tables.map((t) => `${t.name}: ${t.rows.length}`).join("\n"));
