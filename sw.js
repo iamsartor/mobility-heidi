@@ -1,6 +1,6 @@
 // Service Worker: hält die App-Dateien offline verfügbar.
 // Bei Änderungen an den Dateien VERSION erhöhen, damit Geräte die neue Fassung laden.
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `mobility-${VERSION}`;
 const SHELL = ["./", "index.html", "css/style.css", "js/app.js", "js/store.js", "js/config.js", "manifest.webmanifest", "icons/icon.svg"];
 

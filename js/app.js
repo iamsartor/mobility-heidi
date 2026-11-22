@@ -1,4 +1,4 @@
-import { firebaseConfig, FAMILY_EMAIL, PATIENT, PEOPLE } from "./config.js";
+import { firebaseConfig, PIN_HASH, PATIENT, PEOPLE } from "./config.js";
 import { createStore } from "./store.js";
 
 // ---------------------------------------------------------------- Konstanten & Hilfen
@@ -122,6 +122,11 @@ function render() {
 
 // ---------------------------------------------------------------- PIN & Person
 
+async function sha256(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 function renderPin(error = "") {
   $tabs.hidden = true;
   let pin = "";
@@ -147,7 +152,8 @@ function renderPin(error = "") {
     if (pin.length === 6) {
       $app.querySelector(".error").textContent = "Wird geprüft …";
       try {
-        await state.store.signIn(FAMILY_EMAIL, pin);
+        if ((await sha256(pin)) !== PIN_HASH) throw { code: "wrong-pin" };
+        await state.store.signIn();
         who.get() ? showApp() : renderWho();
       } catch (err) {
         const code = err?.code || "";
@@ -156,10 +162,10 @@ function renderPin(error = "") {
             ? "Zu viele Versuche. Bitte später erneut versuchen."
             : code.includes("network")
               ? "Keine Internetverbindung. Für die erste Anmeldung wird Internet gebraucht."
-              : /invalid-credential|wrong-password|invalid-login|user-not-found/.test(code)
+              : code === "wrong-pin"
                 ? "Die PIN stimmt nicht. Bitte erneut versuchen."
-                : code.includes("configuration-not-found") || code.includes("operation-not-allowed")
-                  ? "Die Anmeldung ist in Firebase noch nicht eingerichtet (E-Mail/Passwort aktivieren)."
+                : /configuration-not-found|operation-not-allowed|admin-restricted/.test(code)
+                  ? "Die Anmeldung ist in Firebase noch nicht eingerichtet (anonyme Anmeldung aktivieren)."
                   : `Anmeldung fehlgeschlagen (${code || "unbekannter Fehler"}).`,
         );
       }

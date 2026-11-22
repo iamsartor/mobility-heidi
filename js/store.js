@@ -60,8 +60,8 @@ class FirestoreStore {
     });
   }
 
-  async signIn(email, pin) {
-    await this.authLib.signInWithEmailAndPassword(this.auth, email, pin);
+  async signIn() {
+    await this.authLib.signInAnonymously(this.auth);
   }
 
   async signOut() {

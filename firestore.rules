@@ -1,12 +1,10 @@
 rules_version = '2';
-// Nur das gemeinsame Familienkonto darf lesen und schreiben.
-// FAMILIEN_UID durch die User UID aus Firebase Authentication → Users ersetzen
-// und die Regeln in der Firebase-Konsole unter Firestore → Regeln einfügen.
+// Zugriff für jedes angemeldete Gerät. Die App meldet sich nach der PIN anonym an.
+// In der Firebase-Konsole unter Firestore → Regeln einfügen und veröffentlichen.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /patients/{patientId}/{document=**} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == "FAMILIEN_UID";
+      allow read, write: if request.auth != null;
     }
   }
 }
