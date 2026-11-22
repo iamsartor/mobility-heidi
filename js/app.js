@@ -1,5 +1,7 @@
 import { firebaseConfig, PIN_HASH, PATIENT, PEOPLE } from "./config.js";
 import { createStore } from "./store.js";
+import { exportPackage } from "./export.js";
+import { analyze, renderAnalysisHTML } from "./analysis.js";
 
 // ---------------------------------------------------------------- Konstanten & Hilfen
 
@@ -118,7 +120,8 @@ $tabs.addEventListener("click", (e) => {
 function render() {
   for (const b of $tabs.querySelectorAll("button")) b.classList.toggle("active", b.dataset.view === state.view);
   window.scrollTo(0, 0);
-  ({ today: renderToday, week: renderWeek, settings: renderSettings })[state.view]();
+  document.body.classList.toggle("wide", state.view === "analysis");
+  ({ today: renderToday, week: renderWeek, analysis: renderAnalysis, settings: renderSettings })[state.view]();
 }
 
 // ---------------------------------------------------------------- PIN & Person
@@ -533,6 +536,41 @@ function fmtDateTime(s) {
   return `${fmtDate(d, true)} ${t || ""}`.trim();
 }
 
+// ---------------------------------------------------------------- Analyse (für den Arzt)
+
+async function renderAnalysis() {
+  const { store } = state;
+  const [days, meds, devs, ths] = await Promise.all([
+    store.getDays("0000-00-00", "9999-99-99"),
+    store.list("medications"),
+    store.list("deviations"),
+    store.list("thsSettings"),
+  ]);
+  if (state.view !== "analysis") return;
+  const t = today();
+  const first = Object.keys(days).sort()[0] || t;
+  const span = state.anaDays || 14;
+  const from = span === "all" ? first : addDays(t, -(span - 1));
+  const a = analyze({ days, meds, devs, ths }, { from, to: t, today: t, nowTime: nowTime() });
+  $app.innerHTML = `
+    <div class="an-toolbar no-print">
+      <div class="seg" role="group" aria-label="Zeitraum">
+        ${[[7, "7 Tage"], [14, "14 Tage"], [28, "4 Wochen"], ["all", "Alles"]]
+          .map(([v, l]) => `<button class="${String(span) === String(v) ? "on" : ""}" data-span="${v}">${l}</button>`)
+          .join("")}
+      </div>
+      <button class="secondary" data-print>Drucken / PDF</button>
+    </div>
+    <div class="analysis">${renderAnalysisHTML(a, { patient: PATIENT, LEVELS })}</div>`;
+  $app.querySelectorAll("[data-span]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.anaDays = b.dataset.span === "all" ? "all" : Number(b.dataset.span);
+      renderAnalysis();
+    }),
+  );
+  $app.querySelector("[data-print]").addEventListener("click", () => window.print());
+}
+
 async function renderWeek() {
   const { store } = state;
   const from = state.week;
@@ -569,16 +607,40 @@ async function renderWeek() {
     ).join("")}</tr>`;
   };
 
+  // Einnahmen je Tag: ✕ genommen (nach Plan bzw. zur tatsächlichen Uhrzeit), – ausgelassen, + zusätzlich
+  const intakeMarks = (d) => {
+    const marks = {};
+    const add = (slot, sym, text) => {
+      if (!slot) return;
+      const m = (marks[slot] ||= { syms: new Set(), text: [] });
+      m.syms.add(sym);
+      m.text.push(text);
+    };
+    const isFuture = (t) => d > today() || (d === today() && t > nowTime());
+    for (const m of meds.filter((m) => activeOn(m, d))) {
+      for (const t of m.times || []) {
+        const dev = devs.find((x) => x.date === d && x.medId === m.id && x.plannedTime === t && x.type !== "extra");
+        if (!dev) !isFuture(t) && add(slotOf(t), "✕", `${m.name} ${t}`);
+        else if (dev.type === "late") add(slotOf(dev.actualTime), "✕", `${m.name} ${dev.actualTime} (geplant ${t})`);
+        else add(slotOf(t), "–", `${m.name} ${t} ausgelassen`);
+      }
+    }
+    for (const x of devs.filter((x) => x.date === d && x.type === "extra")) add(slotOf(x.actualTime), "+", `${x.medName} ${x.actualTime} zusätzlich`);
+    return marks;
+  };
+
   const dayRow = (d) => {
     const day = days[d] || {};
     const mob = day.mobility || {};
     const meals = day.meals || [];
+    const marks = intakeMarks(d);
     return `<tr><td class="first">${weekday(d)}<br><small>${fmtDate(d)}</small></td>
       <td class="sleep">${day.sleepHours != null ? fmtNum(day.sleepHours) : ""}</td>
-      ${SLOTS.map(
-        (s) =>
-          `<td class="${mob[s] || ""} ${meals.includes(s) ? "meal" : ""}" title="${s}${mob[s] ? ` ${LEVELS[mob[s]].label}` : ""}${meals.includes(s) ? ", Mahlzeit" : ""}"></td>`,
-      ).join("")}</tr>`;
+      ${SLOTS.map((s) => {
+        const mk = marks[s];
+        const title = [s, mob[s] && LEVELS[mob[s]].label, meals.includes(s) && "Mahlzeit", ...(mk ? mk.text : [])].filter(Boolean).join(", ");
+        return `<td class="${mob[s] || ""} ${meals.includes(s) ? "meal" : ""}" title="${esc(title)}">${mk ? `<span class="intake">${[...mk.syms].join("")}</span>` : ""}</td>`;
+      }).join("")}</tr>`;
   };
 
   const devText = (d) =>
@@ -633,6 +695,7 @@ async function renderWeek() {
       <div class="legend">
         ${Object.entries(LEVELS).map(([k, l]) => `<span><i class="${k}"></i>${l.label}</span>`).join("")}
         <span><i class="meal"></i>Mahlzeit</span>
+        <span><b class="intake">✕</b>&nbsp;Einnahme <b class="intake">–</b>&nbsp;ausgelassen <b class="intake">+</b>&nbsp;zusätzlich</span>
       </div>
 
       <div class="two-col">
@@ -708,6 +771,12 @@ async function renderSettings() {
     </section>
 
     <section class="card">
+      <h2>Daten exportieren</h2>
+      <p class="sub">Alle Einträge als ZIP für eigene Auswertungen, z. B. in Excel, R oder Python: CSV-Tabellen mit Datenbeschreibung (Frictionless Data Package).</p>
+      <button class="secondary" data-export>Export herunterladen</button>
+    </section>
+
+    <section class="card">
       <h2>Dieses Gerät</h2>
       <p>Einträge werden gespeichert als: <strong>${esc(who.get())}</strong></p>
       <div class="row">${PEOPLE.map((p) => `<button class="secondary ${who.get() === p ? "chosen" : ""}" data-who="${esc(p)}">${esc(p)}</button>`).join("")}</div>
@@ -724,6 +793,18 @@ async function renderSettings() {
       renderSettings();
     }),
   );
+  $app.querySelector("[data-export]").addEventListener("click", async (e) => {
+    e.target.disabled = true;
+    try {
+      const counts = await exportPackage(store, PATIENT, today());
+      toast(`Export erstellt: ${counts.find(([n]) => n === "mobility")[1]} Beweglichkeitseinträge.`);
+    } catch (err) {
+      console.error(err);
+      toast("Export fehlgeschlagen.");
+    } finally {
+      e.target.disabled = false;
+    }
+  });
   $app.querySelector("[data-logout]")?.addEventListener("click", async () => {
     await store.signOut();
     renderPin();
@@ -737,6 +818,9 @@ function medSheet(med) {
     `<h2>${med ? "Medikament ändern" : "Neues Medikament"}</h2>
      <label>Name <input type="text" name="name" value="${esc(med?.name || "")}" placeholder="z. B. Levodopa/Benserazid"></label>
      <label>Dosis <input type="text" name="dose" value="${esc(med?.dose || "")}" placeholder="z. B. 125 mg"></label>
+     <label class="check-row"><input type="checkbox" name="rel" ${med?.doseRelevant === false ? "" : "checked"}>
+       Wirkt direkt auf die Beweglichkeit (z. B. Levodopa)</label>
+     <p class="sub">Für die Analyse: Nur diese Einnahmen zählen beim Wirkverlauf nach der Einnahme.</p>
      <p><strong>Einnahmezeiten</strong></p>
      <div class="meals">${SLOTS.map((s) => `<button type="button" class="meal ${times.has(s) ? "on" : ""}" data-time="${s}" aria-pressed="${times.has(s)}">${s}</button>`).join("")}</div>
      <label>Gilt ab <input type="date" name="from" value="${med && med.validFrom > t ? med.validFrom : t}"></label>
@@ -757,7 +841,7 @@ function medSheet(med) {
         const from = val("from") || t;
         if (!name) return toast("Bitte einen Namen eingeben.");
         if (!times.size) return toast("Bitte mindestens eine Uhrzeit wählen.");
-        const data = { name, dose: val("dose"), times: [...times].sort(), validFrom: from, validTo: null };
+        const data = { name, dose: val("dose"), doseRelevant: el.querySelector('[name="rel"]').checked, times: [...times].sort(), validFrom: from, validTo: null };
         const { store } = state;
         if (med && med.validFrom < from) {
           // alte Version bis zum Vortag gültig lassen, neue Version anlegen

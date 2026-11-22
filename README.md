@@ -8,6 +8,8 @@ Web-App, mit der Heidi ihre Beweglichkeit, ihre Medikamente und die THS-Einstell
 - **Medikamente:** Der Plan gilt als eingenommen. Nur Abweichungen werden eingetragen: später genommen, ausgelassen oder eine zusätzliche Einnahme.
 - **Außerdem:** Mahlzeiten, Schlaf in Stunden und Bemerkungen.
 - **Woche:** Der Bogen sieht aus wie auf Papier, mit Verordnungsplan, Farbraster, THS, Abweichungen und Bemerkungen. Über „Drucken / als PDF speichern“ entsteht der Bogen für den Arzt (A4 quer).
+- **Export:** Unter „Plan & THS“ → „Export herunterladen“ entsteht ein ZIP im FAIR-Format, ein Frictionless Tabular Data Package (`datapackage.json` mit Datenwörterbuch, Codelisten und Einheiten, dazu CSV-Dateien im Long-Format mit ISO-8601-Zeitstempeln). Es enthält die Tabellen `mobility`, `medication_plan`, `medication_intake`, `sleep`, `meals`, `dbs_settings` und `notes`.
+- **Analyse:** Die Auswertung für den Arzt orientiert sich am Parkinson-Tagebuch nach Hauser. Sie zeigt OFF-Zeit, ON mit und ohne Dyskinesien, Freezing, den Wirkverlauf nach der Einnahme (Wirkeintritt, Wearing-off, Morgen-OFF), den Tagesverlauf, alle Tage als Raster mit Einnahmen, Phasen je THS-Einstellung und Medikamentenplan, Einnahmetreue, Mahlzeiten und Schlaf. Die Gestaltung folgt Edward Tufte, ist für Handy und Desktop ausgelegt und lässt sich drucken.
 - **Plan & THS:** Hier werden die Medikamente mit Einnahmezeiten gepflegt. Eine Änderung gilt ab einem Datum, frühere Wochen behalten den alten Plan. Bei der THS wird bei jeder Änderung entweder Closed-Loop oder eine Empfindlichkeit von 0 bis 20 in 0,5er-Schritten eingetragen.
 - **Offline:** Einträge funktionieren ohne Netz und werden später synchronisiert.
 - **Als App:** Auf dem iPhone über Safari → Teilen → „Zum Home-Bildschirm“, auf Android über Chrome → Menü → „App installieren“.
@@ -49,3 +51,7 @@ python3 -m http.server 8000
 ```
 
 Danach ist die App unter http://localhost:8000 erreichbar. Nach Änderungen an den Dateien `VERSION` in `sw.js` erhöhen, damit installierte Apps die neue Fassung laden.
+
+## Testdaten
+
+`TZ=Europe/Berlin node tools/dummy-data.mjs <Ordner>` erzeugt vier Wochen synthetische Daten im exakt gleichen Format wie der Export. Enthalten sind Wearing-off-Muster, Freezing, Abweichungen, eine Planänderung und THS-Wechsel. Die Daten sind gedacht, um Analyse-Pipelines zu bauen, und medizinisch nicht validiert.
