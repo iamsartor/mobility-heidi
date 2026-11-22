@@ -14,7 +14,7 @@ Web-App, mit der Heidi ihre Beweglichkeit, ihre Medikamente und die THS-Einstell
 
 ## Einrichtung
 
-Ohne Firebase-Konfiguration in `js/config.js` (`firebaseConfig = null`), läuft die App im **Demo-Modus**. Dann liegen die Daten nur im Browser des jeweiligen Geräts.
+Ohne Firebase-Konfiguration in `js/config.js` (`firebaseConfig = null`) läuft die App im **Demo-Modus**. Dann liegen die Daten nur im Browser des jeweiligen Geräts.
 
 1. **Web-App registrieren:** erledigt, die Konfiguration steht in `js/config.js`.
 2. **Anmeldung:** Unter Authentication → Sign-in method „E-Mail/Passwort“ aktivieren.
