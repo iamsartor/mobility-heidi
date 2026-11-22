@@ -1,0 +1,12 @@
+rules_version = '2';
+// Nur das gemeinsame Familienkonto darf lesen und schreiben.
+// FAMILIEN_UID durch die User UID aus Firebase Authentication → Users ersetzen
+// und die Regeln in der Firebase-Konsole unter Firestore → Regeln einfügen.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /patients/{patientId}/{document=**} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == "FAMILIEN_UID";
+    }
+  }
+}
