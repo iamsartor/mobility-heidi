@@ -4,17 +4,14 @@
 //
 // Solange firebaseConfig null ist, läuft die App im Demo-Modus:
 // Daten liegen dann nur im Browser dieses Geräts, ohne Anmeldung.
-export const firebaseConfig = null;
-/* Beispiel:
 export const firebaseConfig = {
-  apiKey: "…",
+  apiKey: "AIzaSyD_W1zVQWrJwuIGZcA3cy3EgBt_NUJvyx0",
   authDomain: "mobility-heidi.firebaseapp.com",
   projectId: "mobility-heidi",
-  storageBucket: "mobility-heidi.appspot.com",
-  messagingSenderId: "…",
-  appId: "…",
+  storageBucket: "mobility-heidi.firebasestorage.app",
+  messagingSenderId: "261960690888",
+  appId: "1:261960690888:web:8634ec7e6e27b23cf8c9fd",
 };
-*/
 
 // Gemeinsames Konto in Firebase Authentication (E-Mail/Passwort).
 // Das Passwort ist die PIN und steht NICHT im Code.

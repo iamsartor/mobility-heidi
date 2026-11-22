@@ -158,7 +158,9 @@ function renderPin(error = "") {
               ? "Keine Internetverbindung. Für die erste Anmeldung wird Internet gebraucht."
               : /invalid-credential|wrong-password|invalid-login|user-not-found/.test(code)
                 ? "Die PIN stimmt nicht. Bitte erneut versuchen."
-                : `Anmeldung fehlgeschlagen (${code || "unbekannter Fehler"}).`,
+                : code.includes("configuration-not-found") || code.includes("operation-not-allowed")
+                  ? "Die Anmeldung ist in Firebase noch nicht eingerichtet (E-Mail/Passwort aktivieren)."
+                  : `Anmeldung fehlgeschlagen (${code || "unbekannter Fehler"}).`,
         );
       }
     }
