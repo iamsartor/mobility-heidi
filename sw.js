@@ -1,8 +1,8 @@
 // Service Worker: hält die App-Dateien offline verfügbar.
 // Bei Änderungen an den Dateien VERSION erhöhen, damit Geräte die neue Fassung laden.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `mobility-${VERSION}`;
-const SHELL = ["./", "index.html", "css/style.css", "js/app.js", "js/store.js", "js/config.js", "manifest.webmanifest", "icons/icon.svg"];
+const SHELL = ["./", "index.html", "css/style.css", "js/app.js", "js/store.js", "js/export.js", "js/config.js", "manifest.webmanifest", "icons/icon.svg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
