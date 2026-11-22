@@ -14,9 +14,9 @@ Web-App, mit der Heidi ihre Beweglichkeit, ihre Medikamente und die THS-Einstell
 
 ## Einrichtung
 
-Solange `js/config.js` keine Firebase-Konfiguration enthält, läuft die App im **Demo-Modus**. Dann liegen die Daten nur im Browser des jeweiligen Geräts.
+Ohne Firebase-Konfiguration in `js/config.js` (`firebaseConfig = null`), läuft die App im **Demo-Modus**. Dann liegen die Daten nur im Browser des jeweiligen Geräts.
 
-1. **Web-App registrieren:** In der Firebase-Konsole unter Projekteinstellungen → Allgemein → „App hinzufügen“ → Web (`</>`) eine App anlegen. Das angezeigte `firebaseConfig`-Objekt in `js/config.js` eintragen. Diese Werte sind nicht geheim.
+1. **Web-App registrieren:** erledigt, die Konfiguration steht in `js/config.js`.
 2. **Anmeldung:** Unter Authentication → Sign-in method „E-Mail/Passwort“ aktivieren.
 3. **Familienkonto:** Unter Authentication → Users einen Nutzer mit der E-Mail aus `FAMILY_EMAIL` (`familie@mobility-heidi.app`) anlegen. Das Passwort ist die 6-stellige PIN. Die PIN gehört nie ins Repository.
 4. **Domain freigeben:** Unter Authentication → Settings → Autorisierte Domains `iamsartor.github.io` hinzufügen.
