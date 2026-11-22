@@ -4,7 +4,7 @@ Web-App, mit der Heidi ihre Beweglichkeit, ihre Medikamente und die THS-Einstell
 
 ## Funktionen
 
-- **Heute:** Mit drei großen Tasten wird die Beweglichkeit für die aktuelle halbe Stunde eingetragen (Überbeweglich, Gut, Schlecht). Nach einer Lücke bietet die App an, die fehlenden Zeiten nachzutragen. Im Tagesraster lassen sich Einträge von 06:00 bis 23:30 Uhr ändern und vergangene Tage nachtragen.
+- **Heute:** Mit vier großen Tasten wird die Beweglichkeit für die aktuelle halbe Stunde eingetragen (Überbeweglich, Gut, Schlecht, Freezing). Nach einer Lücke bietet die App an, die fehlenden Zeiten nachzutragen. Im Tagesraster lassen sich Einträge von 06:00 bis 23:30 Uhr ändern und vergangene Tage nachtragen.
 - **Medikamente:** Der Plan gilt als eingenommen. Nur Abweichungen werden eingetragen: später genommen, ausgelassen oder eine zusätzliche Einnahme.
 - **Außerdem:** Mahlzeiten, Schlaf in Stunden und Bemerkungen.
 - **Woche:** Der Bogen sieht aus wie auf Papier, mit Verordnungsplan, Farbraster, THS, Abweichungen und Bemerkungen. Über „Drucken / als PDF speichern“ entsteht der Bogen für den Arzt (A4 quer).
@@ -33,7 +33,7 @@ Alle Daten liegen unter `patients/heidi/…`:
 
 | Collection | Inhalt |
 | --- | --- |
-| `days/{YYYY-MM-DD}` | `mobility` (Uhrzeit → `over`/`good`/`poor`), `sleepHours`, `meals`, `notes` |
+| `days/{YYYY-MM-DD}` | `mobility` (Uhrzeit → `over`/`good`/`poor`/`freeze`), `sleepHours`, `meals`, `notes` |
 | `medications/{id}` | `name`, `dose`, `times`, `validFrom`, `validTo` |
 | `deviations/{id}` | `date`, `medName`, `plannedTime`, `type` (`late`/`skipped`/`extra`), `actualTime` |
 | `thsSettings/{id}` | `validFrom`, `mode` (`closedLoop`/`manual`), `sensitivity`, `note` |

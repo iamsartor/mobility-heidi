@@ -11,6 +11,7 @@ const LEVELS = {
   over: { label: "Überbeweglich", sym: "▲" },
   good: { label: "Gut beweglich", sym: "●" },
   poor: { label: "Schlecht beweglich", sym: "▼" },
+  freeze: { label: "Freezing", sym: "■" },
 };
 const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 

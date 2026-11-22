@@ -4,6 +4,7 @@
   --over: #b79ce0;
   --good: #c9c9c9;
   --poor: #f6a96b;
+  --freeze: #8ec5ea;
   --ink: #1d1a22;
   --muted: #5f5868;
   --line: #d9d4e0;
@@ -121,6 +122,7 @@ button:disabled { opacity: .3; cursor: default; }
 .level.over { background: var(--over); }
 .level.good { background: var(--good); }
 .level.poor { background: var(--poor); }
+.level.freeze { background: var(--freeze); }
 .level.chosen { border-color: var(--ink); outline: none; }
 .gap-offer p { margin: 14px 0 0; font-weight: 600; }
 
@@ -145,6 +147,7 @@ button:disabled { opacity: .3; cursor: default; }
 .slot.over { background: var(--over); }
 .slot.good { background: var(--good); }
 .slot.poor { background: var(--poor); }
+.slot.freeze { background: var(--freeze); }
 .slot.current { border: 3px solid var(--ink); }
 
 /* Medikamente */
@@ -308,6 +311,7 @@ details summary { cursor: pointer; padding: 12px 0; color: var(--purple); font-w
 .grid td.over { background: var(--over); }
 .grid td.good { background: var(--good); }
 .grid td.poor { background: var(--poor); }
+.grid td.freeze { background: var(--freeze); }
 .grid td.meal { box-shadow: inset 0 0 0 2px #c0392b; border-radius: 50%; }
 .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; font-size: .75rem; margin: 8px 0; }
 .legend span { display: inline-flex; align-items: center; }
@@ -315,7 +319,8 @@ details summary { cursor: pointer; padding: 12px 0; color: var(--purple); font-w
 .legend i.over { background: var(--over); }
 .legend i.good { background: var(--good); }
 .legend i.poor { background: var(--poor); }
-.legend i.meal { border: 2px solid #c0392b; border-radius: 50%; width: 14px; }
+.legend i.freeze { background: var(--freeze); }
+.legend i.meal { border: 2px solid #c0392b; border-radius: 50%; width: 14px; min-height: 0; background: none; }
 .ths { font-size: .8rem; margin: 6px 0; }
 .two-col { display: grid; grid-template-columns: 1fr; gap: 0 24px; font-size: .8rem; }
 .two-col ul { padding-left: 1.1em; margin: 0; }
