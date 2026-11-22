@@ -538,36 +538,78 @@ function fmtDateTime(s) {
 
 // ---------------------------------------------------------------- Analyse (für den Arzt)
 
+// Beispieldaten (synthetisch, aus tools/dummy-data.mjs) – nur zur Ansicht, werden nie gespeichert.
+let demoData = null;
+async function loadDemo() {
+  if (!demoData) {
+    const r = await fetch("data/demo-data.json", { cache: "no-cache" });
+    if (!r.ok) throw new Error("Beispieldaten nicht gefunden");
+    const raw = await r.json();
+    const list = (o) => Object.entries(o || {}).map(([id, v]) => ({ id, ...v }));
+    demoData = { days: raw.days, meds: list(raw.medications), devs: list(raw.deviations), ths: list(raw.thsSettings) };
+    demoData.end = Object.keys(raw.days).sort().pop();
+  }
+  return demoData;
+}
+
 async function renderAnalysis() {
   const { store } = state;
-  const [days, meds, devs, ths] = await Promise.all([
-    store.getDays("0000-00-00", "9999-99-99"),
-    store.list("medications"),
-    store.list("deviations"),
-    store.list("thsSettings"),
-  ]);
+  let data, t, now, patient;
+  try {
+    if (state.anaDemo) {
+      data = await loadDemo();
+      t = data.end;
+      now = "23:59";
+      patient = { id: "demo", name: "– Beispieldaten" };
+    } else {
+      const [days, meds, devs, ths] = await Promise.all([
+        store.getDays("0000-00-00", "9999-99-99"),
+        store.list("medications"),
+        store.list("deviations"),
+        store.list("thsSettings"),
+      ]);
+      data = { days, meds, devs, ths };
+      t = today();
+      now = nowTime();
+      patient = PATIENT;
+    }
+  } catch (e) {
+    console.error(e);
+    $app.innerHTML = `<p class="error">Die Analyse konnte nicht geladen werden. Bitte Internetverbindung prüfen.</p>`;
+    return;
+  }
   if (state.view !== "analysis") return;
-  const t = today();
-  const first = Object.keys(days).sort()[0] || t;
+  const first = Object.keys(data.days).sort()[0] || t;
   const span = state.anaDays || 14;
   const from = span === "all" ? first : addDays(t, -(span - 1));
-  const a = analyze({ days, meds, devs, ths }, { from, to: t, today: t, nowTime: nowTime() });
+  const a = analyze(data, { from, to: t, today: t, nowTime: now });
+  const realDays = state.anaDemo ? null : Object.values(data.days).filter((d) => Object.keys(d.mobility || {}).length).length;
   $app.innerHTML = `
+    ${state.anaDemo ? `<p class="demo-banner">Beispieldaten: synthetisch erzeugt, keine echten Werte von ${esc(PATIENT.name)}. Nur zur Ansicht, es wird nichts gespeichert.</p>` : ""}
+    ${!state.anaDemo && realDays < 7 ? `<p class="demo">Bisher ${realDays} Tag${realDays === 1 ? "" : "e"} mit Einträgen. Aussagekräftig wird die Analyse nach etwa ein bis zwei Wochen.</p>` : ""}
     <div class="an-toolbar no-print">
       <div class="seg" role="group" aria-label="Zeitraum">
         ${[[7, "7 Tage"], [14, "14 Tage"], [28, "4 Wochen"], ["all", "Alles"]]
           .map(([v, l]) => `<button class="${String(span) === String(v) ? "on" : ""}" data-span="${v}">${l}</button>`)
           .join("")}
       </div>
-      <button class="secondary" data-print>Drucken / PDF</button>
+      <div class="an-actions">
+        <button class="secondary" data-demo>${state.anaDemo ? "Echte Daten anzeigen" : "Beispieldaten anzeigen"}</button>
+        <button class="secondary" data-print>Drucken / PDF</button>
+      </div>
     </div>
-    <div class="analysis">${renderAnalysisHTML(a, { patient: PATIENT, LEVELS })}</div>`;
+    <div class="analysis">${renderAnalysisHTML(a, { patient, LEVELS })}</div>`;
   $app.querySelectorAll("[data-span]").forEach((b) =>
     b.addEventListener("click", () => {
       state.anaDays = b.dataset.span === "all" ? "all" : Number(b.dataset.span);
       renderAnalysis();
     }),
   );
+  $app.querySelector("[data-demo]").addEventListener("click", () => {
+    state.anaDemo = !state.anaDemo;
+    if (state.anaDemo && !state.anaDays) state.anaDays = 28;
+    renderAnalysis();
+  });
   $app.querySelector("[data-print]").addEventListener("click", () => window.print());
 }
 

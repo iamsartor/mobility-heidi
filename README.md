@@ -55,3 +55,5 @@ Danach ist die App unter http://localhost:8000 erreichbar. Nach Änderungen an d
 ## Testdaten
 
 `TZ=Europe/Berlin node tools/dummy-data.mjs <Ordner>` erzeugt vier Wochen synthetische Daten im exakt gleichen Format wie der Export. Enthalten sind Wearing-off-Muster, Freezing, Abweichungen, eine Planänderung und THS-Wechsel. Die Daten sind gedacht, um Analyse-Pipelines zu bauen, und medizinisch nicht validiert.
+
+Die Beispieldaten im Analyse-Tab („Beispieldaten anzeigen“) liegen in `data/demo-data.json`. Das ist die Datei `app-data.json`, die das Skript mit erzeugt.

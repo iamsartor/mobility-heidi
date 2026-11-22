@@ -415,3 +415,7 @@ body.wide #app { max-width: 1180px; }
   .an-wide, .an-head-block { grid-column: 1 / -1; }
   .an-card { padding: 4px 0; break-inside: avoid; }
 }
+.an-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.an-actions .secondary { width: auto; min-height: 48px; margin: 0; padding: 8px 14px; font-size: .8rem; }
+.demo-banner { background: #fff4d6; border-left: 4px solid #e0a800; padding: 10px 12px; border-radius: 8px; font-size: .8rem; font-weight: 600; }
+@media print { .demo-banner { border: 1px solid #e0a800; } }
